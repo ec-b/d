@@ -1,11 +1,18 @@
+import urllib
+import pyodbc
 import sqlalchemy as sa
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import sessionmaker
 
-engine = sa.create_engine(
-    "mssql+pymssql://ILABSQLW19S1:49172/shoe_shop",
-    connect_args={"trusted": True}
+_driver = "SQL Server"
+
+params = urllib.parse.quote_plus(
+    f"DRIVER={{{_driver}}};"
+    "SERVER=ILABSQLW19S1,49172;"
+    "DATABASE=shoe_shop;"
+    "Trusted_Connection=yes;"
 )
+engine = sa.create_engine(f"mssql+pyodbc:///?odbc_connect={params}")
 SessionLocal = sessionmaker(engine)
 
 Base = automap_base()
