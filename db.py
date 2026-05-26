@@ -1,24 +1,23 @@
+# подключение к базе данных и маппинг таблиц через automap
 import urllib
-import pyodbc
 import sqlalchemy as sa
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import sessionmaker
 
-_driver = "SQL Server"
+_driver = "ODBC Driver 17 for SQL Server"
 
 params = urllib.parse.quote_plus(
     f"DRIVER={{{_driver}}};"
-    "SERVER=ILABSQLW19S1,49172;"
+    "SERVER=.\\SQLEXPRESS;"
     "DATABASE=shoe_shop;"
     "Trusted_Connection=yes;"
 )
 engine = sa.create_engine(f"mssql+pyodbc:///?odbc_connect={params}")
-SessionLocal = sessionmaker(engine)
 
 Base = automap_base()
 Base.prepare(autoload_with=engine)
 
-session = SessionLocal()
+session = sessionmaker(engine)()
 
 Product = Base.classes.product
 User = Base.classes.user

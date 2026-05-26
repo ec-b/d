@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.10.2
+## Created by: Qt User Interface Compiler version 6.11.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -29,15 +29,7 @@ class Ui_widget_main(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(widget_main.sizePolicy().hasHeightForWidth())
         widget_main.setSizePolicy(sizePolicy)
-        widget_main.setStyleSheet(u"QPushButton {\n"
-"  background-color: rgb(127, 255, 0);\n"
-"  color: black;\n"
-"}\n"
-"QPushButton:hover {\n"
-"  background-color: rgb(0, 250, 154);\n"
-"  color: black;\n"
-"}\n"
-"QPushButton:pressed {\n"
+        widget_main.setStyleSheet(u"QPushButton:pressed {\n"
 "  background-color: rgb(0, 250, 154);\n"
 "  color: black;\n"
 "}\n"
@@ -68,16 +60,19 @@ class Ui_widget_main(object):
 
         self.comboBox = QComboBox(self.widget_header)
         self.comboBox.setObjectName(u"comboBox")
-        sizePolicy.setHeightForWidth(self.comboBox.sizePolicy().hasHeightForWidth())
-        self.comboBox.setSizePolicy(sizePolicy)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.comboBox.sizePolicy().hasHeightForWidth())
+        self.comboBox.setSizePolicy(sizePolicy2)
         self.comboBox.setAutoFillBackground(False)
 
         self.horizontalLayout.addWidget(self.comboBox)
 
         self.comboBox_2 = QComboBox(self.widget_header)
         self.comboBox_2.setObjectName(u"comboBox_2")
-        sizePolicy.setHeightForWidth(self.comboBox_2.sizePolicy().hasHeightForWidth())
-        self.comboBox_2.setSizePolicy(sizePolicy)
+        sizePolicy2.setHeightForWidth(self.comboBox_2.sizePolicy().hasHeightForWidth())
+        self.comboBox_2.setSizePolicy(sizePolicy2)
 
         self.horizontalLayout.addWidget(self.comboBox_2)
 
@@ -88,8 +83,9 @@ class Ui_widget_main(object):
 
         self.label_username = QLabel(self.widget_header)
         self.label_username.setObjectName(u"label_username")
-        sizePolicy.setHeightForWidth(self.label_username.sizePolicy().hasHeightForWidth())
-        self.label_username.setSizePolicy(sizePolicy)
+        sizePolicy2.setHeightForWidth(self.label_username.sizePolicy().hasHeightForWidth())
+        self.label_username.setSizePolicy(sizePolicy2)
+        self.label_username.setWordWrap(True)
 
         self.horizontalLayout.addWidget(self.label_username, 0, Qt.AlignmentFlag.AlignRight)
 
@@ -108,11 +104,11 @@ class Ui_widget_main(object):
 
         self.widget = QWidget(widget_main)
         self.widget.setObjectName(u"widget")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
-        self.widget.setSizePolicy(sizePolicy2)
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
+        self.widget.setSizePolicy(sizePolicy3)
         self.verticalLayout_2 = QVBoxLayout(self.widget)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.scrollArea = QScrollArea(self.widget)
@@ -171,7 +167,7 @@ class Ui_widget_main(object):
 
     def retranslateUi(self, widget_main):
         widget_main.setWindowTitle(QCoreApplication.translate("widget_main", u"Form", None))
-        self.label_logo.setText("")
+        self.label_logo.setText(QCoreApplication.translate("widget_main", u"Logo", None))
 #if QT_CONFIG(tooltip)
         self.lineEdit_search.setToolTip(QCoreApplication.translate("widget_main", u"<html><head/><body><p><br/></p></body></html>", None))
 #endif // QT_CONFIG(tooltip)

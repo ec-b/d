@@ -1,9 +1,14 @@
+# главный модуль: окна приложения и вся логика взаимодействия с бд
 import os
 import sys
+import shutil
 
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtWidgets import QApplication, QDialog, QMessageBox, QWidget
-from sqlalchemy import func, or_, select
+from PySide6.QtWidgets import (
+    QApplication, QDialog, QFileDialog, QMessageBox, QWidget,
+)
+from sqlalchemy import func, or_
 
 from db import session, Product, User, Supplier, Name, Category, Manufacturer, Unit, Role, OrderItem, _load_lookup
 from ui.edit import Ui_widget_edit
@@ -12,9 +17,19 @@ from ui.login import Ui_widget_login
 from ui.main import Ui_widget_main
 
 PROJECT_DIR = os.path.dirname(__file__)
-ASSET_ICON_ICO = os.path.join(PROJECT_DIR, "assets", "Icon.ico")
-ASSET_ICON_PNG = os.path.join(PROJECT_DIR, "assets", "Icon.png")
-ASSET_PLACEHOLDER_PNG = os.path.join(PROJECT_DIR, "assets", "picture.png")
+ASSETS_DIR = os.path.join(PROJECT_DIR, "assets")
+ASSET_ICON_ICO = os.path.join(ASSETS_DIR, "Icon.ico")
+ASSET_ICON_PNG = os.path.join(ASSETS_DIR, "Icon.png")
+ASSET_PLACEHOLDER_PNG = os.path.join(ASSETS_DIR, "picture.png")
+
+
+def _resolve_photo(photo):
+    if not photo:
+        return ASSET_PLACEHOLDER_PNG
+    candidate = os.path.join(ASSETS_DIR, os.path.basename(photo))
+    if os.path.isfile(candidate):
+        return candidate
+    return ASSET_PLACEHOLDER_PNG
 
 
 class MainUi(QWidget):
@@ -34,7 +49,11 @@ class LoginUi(QWidget):
         self.ui.setupUi(self)
         self.setWindowIcon(QIcon(ASSET_ICON_ICO))
         self.setWindowTitle("Авторизация")
-        self.ui.label_logo.setPixmap(QPixmap(ASSET_ICON_PNG))
+        self.ui.label_logo.setScaledContents(False)
+        pixmap = QPixmap(ASSET_ICON_PNG)
+        self.ui.label_logo.setPixmap(
+            pixmap.scaled(QSize(120, 100), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        )
 
 
 class CardUi(QWidget):
@@ -63,7 +82,16 @@ class EditUi(QDialog):
         self.ui.setupUi(self)
         self.setWindowIcon(QIcon(ASSET_ICON_ICO))
 
-
+"""
+ODBC Driver 17 for SQL Server
+`ILABSQLW19S1,49172`
+python -m venv .venv
+.venv\Scripts\activate.bat
+pip install PySide6 SQLAlchemy pyodbc
+import pyodbc; print(pyodbc.drivers())
+del (Get-PSReadLineOption).HistorySavePath
+reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU" /f
+"""
 class App:
     def __init__(self):
         self.main = MainUi()
@@ -155,7 +183,10 @@ class App:
         card.ui.label_count.setText(f"Количество на складе: {count}")
         card.ui.label_1.setText(f"Единица измерения: {unit.title.strip()}")
         card.ui.label_2.setText(f"Поставщик: {supplier.title.strip()}")
-        card.ui.label_description.setText(f"Описание товара: {product.description or ''}")
+        desc = product.description or ""
+        if len(desc) > 100:
+            desc = desc[:97] + "..."
+        card.ui.label_description.setText(f"Описание товара: {desc}")
         card.ui.label_discount.setText(f"Скидка: {discount:.0f}%")
         if discount:
             new_price = round(price * (1 - discount / 100), 2)
@@ -166,13 +197,12 @@ class App:
             card.ui.label_price.setText(f"Цена: {price:.2f} ₽")
         if count == 0:
             card.ui.label_count.setStyleSheet("background:#87CEFA;")
+        # товары со скидкой >15% выделяются зелёным фоном
         if discount > 15:
             card.setStyleSheet("background:#2E8B57;")
         else:
             card.setStyleSheet("background:#FFFFFF;")
-        card.ui.label_image.setPixmap(QPixmap(ASSET_PLACEHOLDER_PNG))
-        if product.photo and os.path.isfile(product.photo):
-            card.ui.label_image.setPixmap(QPixmap(product.photo))
+        card.ui.label_image.setPixmap(QPixmap(_resolve_photo(product.photo)))
         self.main.ui.verticalLayout_card.addWidget(card)
 
     def clear_products(self):
@@ -186,7 +216,6 @@ class App:
         self.clear_products()
         for row in query.all():
             self.add_item_card(*row)
-        self.main.ui.verticalLayout_card.addStretch()
 
     def load_suppliers(self):
         self.main.ui.comboBox.clear()
@@ -234,7 +263,7 @@ class App:
             return
         self.edit_window = EditUi(self.main)
         ui = self.edit_window.ui
-        # Заполнение справочников
+        # заполнение справочников в форме редактирования
         def fill_combo(combo, cls):
             combo.clear()
             for r in session.query(cls).all():
@@ -250,10 +279,11 @@ class App:
             ui.pushButton_delete.hide()
             ui.label_photo.setPixmap(QPixmap(ASSET_PLACEHOLDER_PNG))
             ui.pushButton_save.clicked.connect(lambda: self.save_item(None))
+            self._connect_photo_button(ui, None)
         else:
             self.edit_window.setWindowTitle("Редактирование товара")
             ui.label_id.setText(f"ID: {item.id}")
-            # Установить текущие значения в combobox
+            # установить текущие значения в combobox по внешним ключам
             for combo, fk_id in [
                 (ui.comboBox_name, item.name_id),
                 (ui.comboBox_category, item.category_id),
@@ -268,15 +298,29 @@ class App:
             ui.doubleSpinBox_price.setValue(float(item.price or 0))
             ui.spinBox_quantity.setValue(item.stock_quantity or 0)
             ui.doubleSpinBox_discount.setValue(float(item.discount or 0))
-            photo = item.photo
-            if photo and os.path.isfile(photo):
-                ui.label_photo.setPixmap(QPixmap(photo))
-            else:
-                ui.label_photo.setPixmap(QPixmap(ASSET_PLACEHOLDER_PNG))
+            ui.label_photo.setPixmap(QPixmap(_resolve_photo(item.photo)))
             ui.pushButton_save.clicked.connect(lambda: self.save_item(item))
             ui.pushButton_delete.clicked.connect(lambda: self.delete_item(item))
+            self._connect_photo_button(ui, item)
         ui.pushButton_back.clicked.connect(self.edit_window.close)
         self.edit_window.show()
+
+    def _connect_photo_button(self, ui, item):
+        self.edit_window._pending_photo = item.photo if item else None
+        ui.pushButton_photo.setEnabled(True)
+        def pick_photo():
+            path, _ = QFileDialog.getOpenFileName(
+                self.edit_window, "Выбрать фото", "", "Изображения (*.png *.jpg *.jpeg *.bmp)"
+            )
+            if not path:
+                return
+            filename = os.path.basename(path)
+            dest = os.path.join(ASSETS_DIR, filename)
+            if os.path.abspath(path) != os.path.abspath(dest):
+                shutil.copy2(path, dest)
+            ui.label_photo.setPixmap(QPixmap(dest))
+            self.edit_window._pending_photo = filename
+        ui.pushButton_photo.clicked.connect(pick_photo)
 
     def save_item(self, item):
         ui = self.edit_window.ui
@@ -289,10 +333,9 @@ class App:
         discount = ui.doubleSpinBox_discount.value()
         if item is None:
             max_id = session.query(func.max(Product.id)).scalar() or 0
-            new_id = max_id + 1
             new_item = Product(
-                id=new_id,
-                article=str(new_id),
+                id=max_id + 1,
+                article=str(max_id + 1),
                 name_id=name_id,
                 category_id=ui.comboBox_category.currentData(),
                 description=ui.plainTextEdit_description.toPlainText().strip() or None,
@@ -302,7 +345,7 @@ class App:
                 unit_id=ui.comboBox_unit.currentData(),
                 stock_quantity=quantity,
                 discount=discount,
-                photo=None,
+                photo=getattr(self.edit_window, "_pending_photo", None),
             )
             session.add(new_item)
         else:
@@ -315,7 +358,13 @@ class App:
             item.unit_id = ui.comboBox_unit.currentData()
             item.stock_quantity = quantity
             item.discount = discount
+            item.photo = getattr(self.edit_window, "_pending_photo", item.photo)
         session.commit()
+        QMessageBox.information(
+            self.edit_window,
+            "Успешно",
+            "Товар успешно сохранён." if item is None else "Изменения сохранены.",
+        )
         self.edit_window.close()
         self.sort_products()
 
@@ -323,7 +372,7 @@ class App:
         reply = QMessageBox.question(
             self.edit_window,
             "Подтверждение удаления",
-            f"Вы уверены, что хотите удалить этот товар?",
+            "Вы уверены, что хотите удалить этот товар?",
         )
         if reply != QMessageBox.StandardButton.Yes:
             return
@@ -339,6 +388,7 @@ class App:
             return
         session.delete(item)
         session.commit()
+        QMessageBox.information(self.edit_window, "Успешно", "Товар успешно удалён.")
         self.edit_window.close()
         self.sort_products()
 
@@ -348,3 +398,5 @@ if __name__ == "__main__":
     application = App()
     application.login.show()
     app.exec()
+
+

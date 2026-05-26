@@ -62,13 +62,25 @@
       <item alignment="Qt::AlignmentFlag::AlignHCenter">
        <widget class="QLabel" name="label_image">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>120</width>
+          <height>150</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>120</width>
+          <height>150</height>
+         </size>
+        </property>
         <property name="text">
-         <string>Image</string>
+         <string/>
         </property>
         <property name="scaledContents">
          <bool>true</bool>
@@ -96,6 +108,9 @@
         <property name="text">
          <string>Категория товара | Имя товара</string>
         </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
@@ -107,6 +122,9 @@
         </property>
         <property name="text">
          <string>Описание товара:</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -120,6 +138,9 @@
         <property name="text">
          <string>Производитель:</string>
         </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
@@ -131,6 +152,9 @@
         </property>
         <property name="text">
          <string>Поставщик:</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -144,6 +168,9 @@
         <property name="text">
          <string>Цена:</string>
         </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
@@ -156,6 +183,9 @@
         <property name="text">
          <string>Единица измерения:</string>
         </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
@@ -166,7 +196,10 @@
          </font>
         </property>
         <property name="text">
-         <string>Количество на складке:</string>
+         <string>Количество на складе:</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -196,10 +229,13 @@
       <item alignment="Qt::AlignmentFlag::AlignHCenter">
        <widget class="QLabel" name="label_discount">
         <property name="styleSheet">
-         <string notr="true">color: rgb(255, 255, 255);</string>
+         <string notr="true">color: rgb(0, 0, 0);</string>
         </property>
         <property name="text">
-         <string>Discount</string>
+         <string>Скидка: 0%</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
